@@ -1,0 +1,93 @@
+use crate::include::IncludeMacro;
+use proc_macro2::TokenStream;
+use std::borrow::Cow;
+use syn::parse::{Parse, ParseBuffer};
+use syn::ExprMacro;
+pub const INCLUDE_STR_NAME: &str = "include_bytes";
+pub mod keywords {
+    use syn::custom_keyword;
+    custom_keyword!(include_bytes);
+}
+/// include_bytes!()
+#[derive(Clone)]
+#[cfg_attr(feature = "extra-traits", derive(Debug))]
+pub struct IncludeBytesMacro<'a> {
+    pub attributes: Cow<'a, [syn::Attribute]>,
+    pub path: Cow<'a, TokenStream>,
+}
+
+#[cfg(feature = "executing")]
+impl<'a> IncludeMacro<'a> for IncludeBytesMacro<'a> {
+    fn get_inner_tokens(&self) -> Cow<'a, TokenStream> {
+        self.path.clone()
+    }
+}
+#[cfg(feature = "executing")]
+impl IncludeBytesMacro<'_> {}
+impl TryFrom<ExprMacro> for IncludeBytesMacro<'_> {
+    type Error = syn::Error;
+
+    fn try_from(value: ExprMacro) -> Result<Self, Self::Error> {
+        if !value.mac.path.is_ident(INCLUDE_STR_NAME) {
+            return Err(syn::Error::new_spanned(
+                value,
+                "Expected include_str! macro",
+            ));
+        }
+        return Ok(IncludeBytesMacro {
+            attributes: Cow::Owned(value.attrs),
+            path: Cow::Owned(value.mac.tokens),
+        });
+    }
+}
+impl<'a> TryFrom<&'a ExprMacro> for IncludeBytesMacro<'a> {
+    type Error = syn::Error;
+
+    fn try_from(value: &'a ExprMacro) -> Result<Self, Self::Error> {
+        if !value.mac.path.is_ident(INCLUDE_STR_NAME) {
+            return Err(syn::Error::new_spanned(
+                value,
+                "Expected include_str! macro",
+            ));
+        }
+        return Ok(IncludeBytesMacro {
+            attributes: Cow::Borrowed(&value.attrs),
+            path: Cow::Borrowed(&value.mac.tokens),
+        });
+    }
+}
+impl Parse for IncludeBytesMacro<'_> {
+    fn parse(input: &ParseBuffer) -> Result<Self, syn::Error> {
+        let expr = input.parse::<ExprMacro>()?;
+        return Self::try_from(expr);
+    }
+}
+#[cfg(feature = "quote")]
+impl quote::ToTokens for IncludeBytesMacro<'_> {
+    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+        use quote::{quote, TokenStreamExt};
+        let path = &self.path;
+        let attributes = &self.attributes;
+        let value = quote! {
+            #(#attributes)*
+            include_str!(#path)
+        };
+        tokens.append_all(value);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::include::include_bytes::IncludeBytesMacro;
+    use crate::include::IncludeMacro;
+
+    #[test]
+    fn test_include_bytes() {
+        let include_str: IncludeBytesMacro = syn::parse_quote! {
+            include_bytes!("./test_data/include_tests.txt")
+        };
+        let as_path = include_str.get_path_buf().unwrap();
+        assert_eq!(as_path, std::path::PathBuf::from("./test_data/include_tests.txt"));
+        println!("as_path = {:?}", as_path);
+    }
+}
