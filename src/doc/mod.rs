@@ -8,7 +8,7 @@ use std::borrow::Cow;
 
 use crate::IOOrParseError;
 use syn::parse::ParseStream;
-use syn::{Attribute, DeriveInput, Field, LitStr};
+use syn::{Attribute, DeriveInput, Field, ItemEnum, ItemFn, ItemStruct, ItemUnion, LitStr};
 use syn::{Expr, Lit, Meta};
 pub const DOC_ATTRIBUTE_NAME: &str = "doc";
 pub mod keywords {
@@ -201,7 +201,10 @@ macro_rules! impl_has_doc_attributes {
 }
 impl_has_doc_attributes!(DeriveInput);
 impl_has_doc_attributes!(Field);
-
+impl_has_doc_attributes!(ItemStruct);
+impl_has_doc_attributes!(ItemEnum);
+impl_has_doc_attributes!(ItemUnion);
+impl_has_doc_attributes!(ItemFn);
 pub mod utils {
     use crate::doc::DocAttribute;
     use syn::Attribute;

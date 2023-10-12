@@ -8,7 +8,7 @@ description = "A library for parsing Rust Standard Library macros"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-syn = "2"
+syn = { version = "2",features = ["full"] }
 proc-macro2 = "1"
 quote = { version = "1" , optional = true}
 strum = { version = "0.25", features = ["derive"] }
