@@ -7,16 +7,16 @@ pub mod keywords {
     use syn::custom_keyword;
     custom_keyword!(stringify);
 }
-use std::borrow::Cow;
 use proc_macro2::{Ident, TokenStream};
-use syn::{ExprMacro, LitStr};
+use std::borrow::Cow;
 use syn::parse::Parse;
 use syn::spanned::Spanned;
+use syn::{ExprMacro, LitStr};
 
 #[derive(Clone)]
 #[non_exhaustive]
 #[cfg_attr(feature = "extra-traits", derive(Debug))]
-pub struct StringifyMacro<'a>{
+pub struct StringifyMacro<'a> {
     pub attributes: Cow<'a, [syn::Attribute]>,
     pub keyword: keywords::stringify,
     pub content: Ident,
@@ -55,10 +55,7 @@ impl<'a> TryFrom<&'a ExprMacro> for StringifyMacro<'a> {
 
     fn try_from(value: &'a ExprMacro) -> Result<Self, Self::Error> {
         if !value.mac.path.is_ident(STRINGIFY_NAME) {
-            return Err(syn::Error::new_spanned(
-                value,
-                "Expected stringify! macro",
-            ));
+            return Err(syn::Error::new_spanned(value, "Expected stringify! macro"));
         }
         return Ok(StringifyMacro {
             attributes: Cow::Borrowed(&value.attrs),
@@ -73,10 +70,7 @@ impl TryFrom<ExprMacro> for StringifyMacro<'_> {
 
     fn try_from(value: ExprMacro) -> Result<Self, Self::Error> {
         if !value.mac.path.is_ident(STRINGIFY_NAME) {
-            return Err(syn::Error::new_spanned(
-                value,
-                "Expected stringify! macro",
-            ));
+            return Err(syn::Error::new_spanned(value, "Expected stringify! macro"));
         }
         return Ok(StringifyMacro {
             attributes: Cow::Owned(value.attrs),
@@ -88,8 +82,8 @@ impl TryFrom<ExprMacro> for StringifyMacro<'_> {
 
 #[cfg(test)]
 mod tests {
-    use syn::ExprMacro;
     use crate::string::StringifyMacro;
+    use syn::ExprMacro;
 
     #[test]
     fn test_stringify() {

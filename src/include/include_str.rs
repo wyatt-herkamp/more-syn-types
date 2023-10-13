@@ -98,7 +98,10 @@ mod tests {
             include_str!("./test_data/include_tests.txt")
         };
         let as_path = include_str.get_path_buf().unwrap();
-        assert_eq!(as_path, std::path::PathBuf::from("./test_data/include_tests.txt"));
+        assert_eq!(
+            as_path,
+            std::path::PathBuf::from("./test_data/include_tests.txt")
+        );
         println!("as_path = {:?}", as_path);
         let string = include_str.read_to_string().unwrap();
         println!("string = {:?}", string);

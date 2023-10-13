@@ -2,8 +2,8 @@ use crate::include::IncludeMacro;
 use proc_macro2::TokenStream;
 use std::borrow::Cow;
 use syn::parse::{Parse, ParseBuffer};
-use syn::ExprMacro;
 use syn::spanned::Spanned;
+use syn::ExprMacro;
 
 pub const INCLUDE_STR_NAME: &str = "include_bytes";
 pub mod keywords {
@@ -90,7 +90,10 @@ mod tests {
             include_bytes!("./test_data/include_tests.txt")
         };
         let as_path = include_str.get_path_buf().unwrap();
-        assert_eq!(as_path, std::path::PathBuf::from("./test_data/include_tests.txt"));
+        assert_eq!(
+            as_path,
+            std::path::PathBuf::from("./test_data/include_tests.txt")
+        );
         println!("as_path = {:?}", as_path);
     }
 }
