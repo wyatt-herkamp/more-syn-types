@@ -16,7 +16,7 @@ pub mod keywords {
     custom_keyword!(doc);
     custom_keyword!(inline);
 }
-// TODO: Owned Parser
+
 /// A Doc Attribute
 #[derive(Clone)]
 #[non_exhaustive]
@@ -54,6 +54,7 @@ impl TryFrom<Attribute> for DocAttribute<'static> {
     type Error = syn::Error;
 
     fn try_from(attribute: Attribute) -> Result<Self, Self::Error> {
+        // TODO  Don't Error on Unknown Attributes
         if !attribute.path().is_ident(DOC_ATTRIBUTE_NAME) {
             return Err(syn::Error::new_spanned(attribute, "Expected doc attribute"));
         }

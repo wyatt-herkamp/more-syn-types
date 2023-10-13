@@ -3,6 +3,8 @@ use proc_macro2::TokenStream;
 use std::borrow::Cow;
 use syn::parse::{Parse, ParseBuffer};
 use syn::ExprMacro;
+use syn::spanned::Spanned;
+
 pub const INCLUDE_STR_NAME: &str = "include_bytes";
 pub mod keywords {
     use syn::custom_keyword;
@@ -13,6 +15,7 @@ pub mod keywords {
 #[cfg_attr(feature = "extra-traits", derive(Debug))]
 pub struct IncludeBytesMacro<'a> {
     pub attributes: Cow<'a, [syn::Attribute]>,
+    pub keyword: keywords::include_bytes,
     pub path: Cow<'a, TokenStream>,
 }
 
@@ -36,6 +39,7 @@ impl TryFrom<ExprMacro> for IncludeBytesMacro<'_> {
         }
         return Ok(IncludeBytesMacro {
             attributes: Cow::Owned(value.attrs),
+            keyword: keywords::include_bytes(value.mac.path.span()),
             path: Cow::Owned(value.mac.tokens),
         });
     }
@@ -52,6 +56,7 @@ impl<'a> TryFrom<&'a ExprMacro> for IncludeBytesMacro<'a> {
         }
         return Ok(IncludeBytesMacro {
             attributes: Cow::Borrowed(&value.attrs),
+            keyword: keywords::include_bytes(value.mac.path.span()),
             path: Cow::Borrowed(&value.mac.tokens),
         });
     }
@@ -64,15 +69,13 @@ impl Parse for IncludeBytesMacro<'_> {
 }
 #[cfg(feature = "quote")]
 impl quote::ToTokens for IncludeBytesMacro<'_> {
-    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
-        use quote::{quote, TokenStreamExt};
-        let path = &self.path;
-        let attributes = &self.attributes;
-        let value = quote! {
-            #(#attributes)*
-            include_str!(#path)
-        };
-        tokens.append_all(value);
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        crate::utils::quote::to_tokens_function_like_macro_parenthesis(
+            tokens,
+            &self.keyword,
+            &self.path,
+            &self.attributes,
+        )
     }
 }
 

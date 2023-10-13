@@ -1,4 +1,4 @@
-# std_macros
+# more-syn-types
 A collection of macros from the rust standard library. Allows you to parse them in your own code
 
 # Goals
